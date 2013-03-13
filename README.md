@@ -1,4 +1,4 @@
 raspHA
 ======
 
-Home Automation with Raspberry Pi
+Home Automation with Raspberry Pi via GPIO.
