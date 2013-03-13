@@ -1,0 +1,65 @@
+{
+	"general": {
+		"host": "0.0.0.0",
+		"port": "5000",
+		"debug": "true"
+	},
+	"GPIO": {
+		"setmode": "GPIO.BCM",
+		"pins": [
+			{
+				"number": "7",
+				"name": "All Lights On",
+				"mode": "GPIO.OUT",
+				"initial": "GPIO.LOW"
+			},
+            {
+				"number": "8",
+				"name": "All Lights Off",
+				"mode": "GPIO.OUT",
+				"initial": "GPIO.LOW"
+			},
+            {
+				"number": "24",
+				"name": "Scenario Raffstore Down",
+				"mode": "GPIO.OUT",
+				"initial": "GPIO.LOW"
+			},
+			{
+				"number": "25",
+				"name": "Scenario Raffstore Up",
+				"mode": "GPIO.OUT",
+				"initial": "GPIO.LOW"
+			}
+		]
+	},
+	"modules": [
+		{
+			"name": "Weather Underground",
+			"autostart": "yes",
+			"filename": "./wunderground.py",
+			"apikey": "enteryourapikeyhere",
+			"location": "Austria/Mattersburg",
+			"rules": [
+				{
+					"description": "Raffstore up, if wind is > 10 kmh",
+					"expression": "wind_kph > 10",
+					"number": "25",
+					"state": "GPIO.HIGH"
+				},
+				{
+					"description": "All lights on, if temp is < 0 c",
+					"expression": "temp_c < 0",
+					"number": "7",
+					"state": "GPIO.HIGH"
+				},
+				{
+					"description": "Raffstore down, if pressure is > 1000 b",
+					"expression": "pressure_mb > 1000 and temp_c > 0",
+					"number": "24",
+					"state": "GPIO.HIGH"
+				}
+			]
+		}
+	]	
+}

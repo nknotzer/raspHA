@@ -1,0 +1,48 @@
+<!DOCTYPE html 
+      PUBLIC "-//W3C//DTD HTML 4.01//EN"
+      "http://www.w3.org/TR/html4/strict.dtd">
+<head>
+	<meta name="viewport" content="width=device-width"> 
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+	<title>raspHA - Device Status</title>
+</head>
+<body>
+	<div><a href="{{ url_for('main') }}"><img src="{{ url_for('static', filename='raspHA.png') }}" alt="RaspHA Logo" style="float:right"></a>
+	<h1>Devices</h1>
+	</div>
+	<table border = "1" rules="groups">
+		<thead>
+			<tr>
+				<th>Device Name</th>
+				<th>Status</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for pin in pins %}
+			<tr>
+				<td>{{pin["name"]}}</td>
+				
+				{% if pin["state"] == "GPIO.HIGH" %}
+				<td style="background-color:green;text-align:center">	on </td>
+				{% else %}
+				<td style="background-color:red;text-align:center">	off </td> 
+				{% endif %}
+				</td>
+				<td>
+				{% if pin["state"] == "GPIO.HIGH" %}
+					<input type=button onClick="parent.location='/{{pin["number"]}}/off'" value='Turn Off'>
+				{% else %}
+					<input type=button onClick="parent.location='/{{pin["number"]}}/on'" value='Turn On'>
+				{% endif %}
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	{% if message %}
+	<p>{{ message }}</p>
+	{% endif %}
+</body>
+</html>
