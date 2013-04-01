@@ -25,6 +25,7 @@ import time
 import requests
 import logging
 from daemon import Daemon
+from Adafruit_CharLCD import Adafruit_CharLCD
 
 logfile = "/var/log/raspHA_wunderground.log"
 pidfile = "/var/run/raspHA_wunderground.pid"
@@ -47,11 +48,11 @@ def loadconfig():
 		GPIO.output(int(pin["number"]),eval(pin["initial"]))
 		logging.info(pin["number"].zfill(2)+" "+pin["mode"]+" "+pin["initial"])
 	
-	
 	for mod in config["modules"]:
 	 	if mod["name"] == "Weather Underground":
 			mod_config = mod
 			logging.info(mod_config)
+			break
 	
 def loadcurrentconditions():
 	""" load current condition from weather underground """
@@ -59,13 +60,12 @@ def loadcurrentconditions():
 	apiurl = "http://api.wunderground.com/api/" + mod_config["apikey"]  + "/conditions/q/" + mod_config["location"] + ".json"
 	logging.info (apiurl)
 	r = requests.get(apiurl)
-	conditions = r.json
+	conditions = json.loads(r.text)
 	logging.info (conditions)
 	
 	
 def evaluaterules():
 	""" evaluate rules defined in configfile """
-	
 	for key in conditions["current_observation"].keys():
 		exec(key + " = conditions[\"current_observation\"]['" + key + "']")
 	
@@ -77,13 +77,43 @@ def evaluaterules():
 		else:
 			logging.info (expr + ": FALSE")
 			
+def lcd_showcurrentconditions():
+	ignore = mod_config["lcd_ignore"].split(",")
+	for cond in conditions["current_observation"]:
+		cond_ignore = False;
+		for i in ignore:
+			if i in cond:
+				cond_ignore = True
+				break
+				
+		if (cond_ignore == False):
+			if (cond == "observation_location" or cond == "display_location"):
+				lcd.clear()
+				lcd.message (str(cond))
+				lcd.message ("\n")
+				lcd.message (str(conditions["current_observation"][cond]["city"]))
+			else:			
+				lcd.clear()
+				lcd.message (str(cond))
+				lcd.message ("\n")
+				lcd.message (str(conditions["current_observation"][cond]))
+			time.sleep (float(mod_config["lcd_duration"]))
+			
 class wundergroundDaemon(Daemon):
 	def run(self):
+		global lcd
 		loadconfig()
+		if (mod_config["lcd"] == "yes"):
+			lcd = Adafruit_CharLCD()
+			lcd.begin(16,1)
 		while True:
 			loadcurrentconditions()
 			evaluaterules()
-			time.sleep(180)
+			timestamp = time.time()
+			while (time.time() - timestamp < mod_config["interval"]):
+				if (mod_config["lcd"] == "yes"):
+					lcd_showcurrentconditions()
+			
 
 if __name__ == "__main__":
 	daemon = wundergroundDaemon(pidfile)

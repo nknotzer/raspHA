@@ -81,6 +81,7 @@ def action(PinToChange, action):
 	for pin in config["GPIO"]["pins"]:
 		if pin["number"] == PinToChange:
 			devicename = pin["name"]
+			break
 	
 	if action == "on":
 		GPIO.output(int(PinToChange), GPIO.HIGH)
