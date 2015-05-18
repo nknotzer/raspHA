@@ -17,7 +17,6 @@ RaspHA consits of:
 2015-05-18: http-basic-auth added, username and password are configured via config.json. if password is empty, authentication is disabled.  
   
 TODOS for further versions:
-* integrate authentication (i use OpenVPN for access to my lan, so i don't need authentication NOW)
 * security hardening: raspHA must run as root to access GPIO ports, uses python "eval" to evaluate rules for the weather module, so arbitrary code could be executed, never trust user input ;-) 
 * further modules (e.g. time-based control of devices)...
 * control of modules (i.e. daemons) via the web-gui (start/restart/stop daemons)
