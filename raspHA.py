@@ -18,17 +18,41 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import RPi.GPIO as GPIO
+import time
 import json
 import os
 import sys
 import logging
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, Response
 from subprocess import call
-
+from functools import wraps
 
 app = Flask(__name__)
 logfile = "/var/log/raspHA.log"
-configfile = "./config.json"
+configfile = "/opt/raspHA/config.json"
+
+def check_auth(username, password):
+    """This function is called to check if a username /
+    password combination is valid.
+    """
+    return username == config["general"]["username"] and password == config["general"]["password"]
+    
+def authenticate():
+    """Sends a 401 response that enables basic auth"""
+    return Response(
+    'Could not verify your access level for that URL.\n'
+    'You have to login with proper credentials', 401,
+    {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+		if config["general"]["password"] != "":
+			auth = request.authorization
+			if not auth or not check_auth(auth.username, auth.password):
+				return authenticate()
+		return f(*args, **kwargs)
+    return decorated
 
 def loadconfig():
 	""" parse config-file, store in dictionary variable "config" """
@@ -67,6 +91,7 @@ def gpiogetstate():
 		logging.info(pin["number"].zfill(2)+" "+pin["mode"]+" "+pin["state"])	
 
 @app.route("/")
+@requires_auth
 def main():
 	""" show state of devices """
 	gpiogetstate()		
@@ -76,6 +101,7 @@ def main():
 	return render_template("main.html", **templateData)
 	
 @app.route("/<PinToChange>/<action>")
+@requires_auth
 def action(PinToChange, action):
 	""" change status of devices """
 	for pin in config["GPIO"]["pins"]:
@@ -85,10 +111,15 @@ def action(PinToChange, action):
 	
 	if action == "on":
 		GPIO.output(int(PinToChange), GPIO.HIGH)
-		message = "Turned \"" + devicename + "\" on."
+		message = "\"" + devicename + "\" eingeschaltet."
 	if action == "off":
 		GPIO.output(int(PinToChange), GPIO.LOW)
-		message = "Turned \"" + devicename + "\" off."
+		message = "\"" + devicename + "\" ausgeschaltet."
+	if action == "trigger":
+		GPIO.output(int(PinToChange), GPIO.HIGH)
+		time.sleep (0.1)
+		GPIO.output(int(PinToChange), GPIO.LOW)
+		message = "\"" + devicename + "\" geschaltet."
 	
 	gpiogetstate()		
 	templateData = {

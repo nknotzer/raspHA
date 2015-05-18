@@ -2,32 +2,38 @@
 	"general": {
 		"host": "0.0.0.0",
 		"port": "5000",
-		"debug": "true"
+		"debug": "true",
+		"username": "admin",
+		"password": ""
 	},
 	"GPIO": {
 		"setmode": "GPIO.BCM",
 		"pins": [
 			{
-				"number": "2",
-				"name": "All Lights On",
+				"number": "17",
+				"name": "Beleuchtung Auffahrt",
+				"type": "switch",
 				"mode": "GPIO.OUT",
 				"initial": "GPIO.LOW"
 			},
             {
-				"number": "3",
-				"name": "All Lights Off",
+				"number": "18",
+				"name": "LED Außen",
+				"type": "switch",
 				"mode": "GPIO.OUT",
 				"initial": "GPIO.LOW"
 			},
             {
-				"number": "4",
-				"name": "Scenario Raffstore Down",
+				"number": "27",
+				"name": "Raffstore runter",
+				"type": "scenario",
 				"mode": "GPIO.OUT",
 				"initial": "GPIO.LOW"
 			},
 			{
-				"number": "14",
-				"name": "Scenario Raffstore Up",
+				"number": "22",
+				"name": "Raffstore rauf",
+				"type": "scenario",
 				"mode": "GPIO.OUT",
 				"initial": "GPIO.LOW"
 			}
@@ -36,8 +42,8 @@
 	"modules": [
 		{
 			"name": "Weather Underground",
-			"autostart": "yes",
-			"lcd": "yes",
+			"autostart": "no",
+			"lcd": "no",
 			"lcd_ignore": "_mph,_f,_url,image,epoch,estimated",
 			"lcd_duration": "3",
 			"interval": "180",
